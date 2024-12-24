@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ecobooks.models.UserModel;
@@ -65,9 +64,16 @@ public class UserController {
     }
 
     // Get user by Email
-    @GetMapping("/search")
-    public ResponseEntity<UserModel> getUserByEmail(@RequestParam String email) {
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UserModel> getUserByEmail(@PathVariable String email) {
         return userService.getUserByEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/phone/{phone}")
+    public ResponseEntity<UserModel> getUserByPhone(@PathVariable String phone) {
+        return userService.getUserByPhone(phone)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
