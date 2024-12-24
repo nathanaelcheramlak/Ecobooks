@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import ecobooks.models.OrderModel;
 import ecobooks.models.OrderStatus;
@@ -13,6 +14,7 @@ import ecobooks.models.UserModel;
 import ecobooks.repositories.OrderRepository;
 import ecobooks.repositories.UserRepository;
 
+@Service
 public class OrderService {
     @Autowired
     private final OrderRepository orderRepository;
@@ -43,6 +45,15 @@ public class OrderService {
         if (updatedOrder.getTotalPrice() != null && updatedOrder.getTotalPrice().compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Total price cannot be negative");
         }
+
+        // Checks if order is completed
+        if (existingOrder.getStatus().equals(OrderStatus.COMPLETED)) {
+            throw new IllegalArgumentException("Order cannot be canceled after completion");
+        }
+
+        if (updatedOrder.getStatus() != null) {
+            existingOrder.setStatus(updatedOrder.getStatus());
+        }
         
         if (updatedOrder.getTotalPrice() != null) {
             existingOrder.setTotalPrice(updatedOrder.getTotalPrice());
@@ -58,21 +69,7 @@ public class OrderService {
 
         return orderRepository.save(existingOrder);
     }   
-
-    // Cancel an order
-    public OrderModel cancelOrder(Long orderId) {
-        OrderModel order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new NoSuchElementException("Order not found"));
     
-        if (order.getStatus().equals(OrderStatus.COMPLETED)) {
-            throw new IllegalArgumentException("Order cannot be canceled after completion");
-        }
-    
-        order.setStatus(OrderStatus.CANCELED);
-        return orderRepository.save(order);
-    }
-    
-
     // Delete an order
     public void deleteOrder(Long orderId) {
         if (!orderRepository.existsById(orderId)) {
