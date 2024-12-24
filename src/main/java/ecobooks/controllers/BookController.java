@@ -45,6 +45,7 @@ public class BookController {
         return ResponseEntity.status(200).body(updatedBook);
     }
 
+    // Delete a book
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);
@@ -91,7 +92,6 @@ public class BookController {
     // Get books by seller
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<List<BookModel>> getBookBySeller(@PathVariable Long sellerId) {
-        // Assuming UserService exists and is injected
         UserModel seller = userService.getUserById(sellerId)
             .orElseThrow(() -> new RuntimeException("Seller not found"));
         List<BookModel> books = bookService.getBooksBySeller(seller);
