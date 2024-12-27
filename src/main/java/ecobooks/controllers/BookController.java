@@ -14,21 +14,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ecobooks.models.BookModel;
-import ecobooks.models.UserModel;
 import ecobooks.services.BookService;
-import ecobooks.services.UserService;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/api/v1/books")
 public class BookController {
     @Autowired
     private final BookService bookService;
-    private final UserService userService;
 
-    public BookController(BookService bookService, UserService userService) {
+    public BookController(BookService bookService) {
         this.bookService = bookService;
-        this.userService = userService;
     }
 
     // Add a book
@@ -92,10 +90,14 @@ public class BookController {
     // Get books by seller
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<List<BookModel>> getBookBySeller(@PathVariable Long sellerId) {
-        UserModel seller = userService.getUserById(sellerId)
-            .orElseThrow(() -> new RuntimeException("Seller not found"));
-        List<BookModel> books = bookService.getBooksBySeller(seller);
+        List<BookModel> books = bookService.getBooksBySeller(sellerId);
         return ResponseEntity.ok(books);
     }
     
+    // Search books by keyword
+    @GetMapping("/search")
+    public ResponseEntity<List<BookModel>> getMethodName(@RequestParam String keyword) {
+        List<BookModel> books = bookService.searchBook(keyword);
+        return ResponseEntity.ok(books);
+    }
 }
