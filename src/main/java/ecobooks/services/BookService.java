@@ -9,19 +9,38 @@ import org.springframework.stereotype.Service;
 
 import ecobooks.models.BookModel;
 import ecobooks.models.UserModel;
+import ecobooks.models.UserRole;
 import ecobooks.repositories.BookRepository;
+import ecobooks.repositories.UserRepository;
 
 @Service
 public class BookService {
     @Autowired
     private final BookRepository bookRepository;
 
-    public BookService(BookRepository bookRepository) {
+    @Autowired
+    private final UserRepository userRepository;
+
+    public BookService(BookRepository bookRepository, UserRepository userRepository) {
         this.bookRepository = bookRepository;
+        this.userRepository = userRepository;
     }
 
     // Add a book
     public BookModel addBook(BookModel book) {
+        Long sellerId = book.getSeller().getId();
+        Optional<UserModel> seller = userRepository.findById(sellerId);
+
+        if (seller.isEmpty()) {
+            throw new NoSuchElementException("Seller not found");
+        }
+
+        if (!seller.get().getRole().equals(UserRole.SELLER)) {
+            throw new IllegalArgumentException("Only sellers can add books");
+        }
+
+        book.setSeller(seller.get());
+
         return bookRepository.save(book);
     }
 
@@ -84,12 +103,24 @@ public class BookService {
     }
 
     // Get books by seller
-    public List<BookModel> getBooksBySeller(UserModel seller) {
+    public List<BookModel> getBooksBySeller(Long sellerId) {
+        UserModel seller = userRepository.findById(sellerId)
+            .orElseThrow(() -> new RuntimeException("Seller not found"));
+        
+        if (!seller.getRole().equals(UserRole.SELLER)) {
+            throw new IllegalArgumentException("Only sellers can sell books");
+        }
+        
         return bookRepository.findBySeller(seller);
     }
 
     // Get book by ID
     public Optional<BookModel> getBookById(Long id) {
         return bookRepository.findById(id);
+    }
+
+    // Search a book by keyword
+    public List<BookModel> searchBook(String keyword) {
+        return bookRepository.searchBooks(keyword);
     }
 }
