@@ -18,6 +18,8 @@ import ecobooks.repositories.UserRepository;
 public class OrderService {
     @Autowired
     private final OrderRepository orderRepository;
+
+    @Autowired
     private final UserRepository userRepository;
 
     public OrderService(OrderRepository orderRepository, UserRepository userRepository) {
