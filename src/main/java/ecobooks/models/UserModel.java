@@ -37,7 +37,7 @@ public class UserModel {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole role = UserRole.CLIENT;
+    private UserRole role;
 
     @CreationTimestamp
     @Column(updatable = false)
