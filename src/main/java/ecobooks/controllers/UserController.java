@@ -1,6 +1,7 @@
 package ecobooks.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,53 +30,69 @@ public class UserController {
 
     // Create user
     @PostMapping
-    public ResponseEntity<UserModel> registerUser(@RequestBody @Valid UserModel user) {
+    public ResponseEntity<?> registerUser(@RequestBody @Valid UserModel user) {
         UserModel newUser = userService.registerUser(user);
-        return ResponseEntity.status(201).body(newUser);
+        return ResponseEntity.status(201).body(Map.of("message", "User created successfully", "user", newUser));
     }
 
     // Update user by id
     @PutMapping("/{id}")
-    public ResponseEntity<UserModel> updateUser(@PathVariable Long id, @RequestBody @Valid UserModel user) {
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody @Valid UserModel user) {
         UserModel updatedUser = userService.updateUser(id, user);
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(Map.of("message", "User updated successfully", "user", updatedUser));
     }
 
     // Delete user by id
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return ResponseEntity.noContent().build();  
+        return ResponseEntity.status(204).body(Map.of("message", "User deleted successfully"));  
     }
 
     // Get all users
     @GetMapping
-    public ResponseEntity<List<UserModel>> getAllUsers() {
+    public ResponseEntity<?> getAllUsers() {
         List<UserModel> users = userService.getAllUser();
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(Map.of("users", users, "count", users.size()));
     }
 
     // Get a user by ID
     @GetMapping("/{id}")
-    public ResponseEntity<UserModel> getUserById(@PathVariable Long id) {
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
         return userService.getUserById(id)
-                .map(ResponseEntity::ok) // 200 OK if user exists
-                .orElse(ResponseEntity.notFound().build()); // 404 Not Found
+                .map(user -> ResponseEntity.ok(Map.of(
+                    "message", "User retrieved successfully",
+                    "user", user
+                ))) // 200 OK with message and user data
+                .orElse(ResponseEntity.status(404).body(Map.of(
+                    "error", "User not found"
+                ))); // 404 Not Found with error message
     }
 
     // Get user by Email
     @GetMapping("/email/{email}")
-    public ResponseEntity<UserModel> getUserByEmail(@PathVariable String email) {
+    public ResponseEntity<?> getUserByEmail(@PathVariable String email) {
         return userService.getUserByEmail(email)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(user -> ResponseEntity.ok(Map.of(
+                    "message", "User retrieved successfully",
+                    "user", user
+                ))) // 200 OK with message and user data
+                .orElse(ResponseEntity.status(404).body(Map.of(
+                    "error", "User with the provided email not found"
+                ))); // 404 Not Found with error message
     }
 
+    // Get user by Phone
     @GetMapping("/phone/{phone}")
-    public ResponseEntity<UserModel> getUserByPhone(@PathVariable String phone) {
+    public ResponseEntity<?> getUserByPhone(@PathVariable String phone) {
         return userService.getUserByPhone(phone)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(user -> ResponseEntity.ok(Map.of(
+                    "message", "User retrieved successfully",
+                    "user", user
+                ))) // 200 OK with message and user data
+                .orElse(ResponseEntity.status(404).body(Map.of(
+                    "error", "User with the provided phone number not found"
+                ))); // 404 Not Found with error message
     }
 
 }
