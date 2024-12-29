@@ -108,7 +108,7 @@ public class BookService {
             .orElseThrow(() -> new RuntimeException("Seller not found"));
         
         if (!seller.getRole().equals(UserRole.SELLER)) {
-            throw new IllegalArgumentException("Only sellers can sell books");
+            throw new IllegalArgumentException("User is not a seller");
         }
         
         return bookRepository.findBySeller(seller);
