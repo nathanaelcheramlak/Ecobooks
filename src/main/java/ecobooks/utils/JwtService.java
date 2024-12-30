@@ -1,12 +1,12 @@
 package ecobooks.utils;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -17,23 +17,10 @@ import java.util.Map;
 public class JwtService {
     private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
 
-    // @Value("${SECURITY_JWT_SECRET:default_secret}")
-    private String secretKey = "3cfa76ef14937c1d2ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e003an";
+    @Value("${security.jwt.secret-key}")
+    private String secretKey;
 
-    // @Value("${SECURITY_JWT_TOKEN_EXPIRATION:1000000}")
-    private long tokenExpiration = 604800000;
-
-    private Key key;
-
-    @PostConstruct
-    public void init() {
-        // Dotenv dotenv = Dotenv.load();
-        // this.secretKey = dotenv.get("SECURITY_JWT_SECRET", "default_secret123");
-        // this.tokenExpiration = Long.parseLong(dotenv.get("SECURITY_JWT_TOKEN_EXPIRATION", "604800000"));
-
-        // Initialize the signing key
-        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
-    }
+    private Long tokenExpiration = 604800000L;
 
     public String generateToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
@@ -41,7 +28,7 @@ public class JwtService {
                 .setSubject(subject)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + tokenExpiration))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -52,7 +39,7 @@ public class JwtService {
     public Claims extractAllClaims(String token) {
         try {
             return Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(getSignInKey())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -100,10 +87,16 @@ public class JwtService {
         }
     }
 
+    private Key getSignInKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
+        // return Keys.hmacShaKeyFor(secretKey.getBytes());
+    }
+
     // Optional: Add method to validate token without checking subject
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token);
             return true;
         } catch (JwtException e) {
             return false;
