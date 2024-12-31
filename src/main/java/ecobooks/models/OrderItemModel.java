@@ -1,21 +1,21 @@
 package ecobooks.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-import java.math.BigDecimal;
-
 @Entity
 @Table(name = "order_items")
 public class OrderItemModel {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
+    @JsonIgnore
     private OrderModel order;
 
     @ManyToOne
@@ -27,19 +27,14 @@ public class OrderItemModel {
     @Column(nullable = false)
     private Integer quantity;
 
-    @NotNull(message = "Item price is required")
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
-
     // Default Constructor
     public OrderItemModel() {}
 
     // Constructor
-    public OrderItemModel(OrderModel order, BookModel book, Integer quantity, BigDecimal price) {
+    public OrderItemModel(OrderModel order, BookModel book, Integer quantity) {
         this.order = order;
         this.book = book;
         this.quantity = quantity;
-        this.price = price;
     }
 
     // Getters and Setters
@@ -69,18 +64,5 @@ public class OrderItemModel {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    // Utility Method
-    public BigDecimal calculateTotalPrice() {
-        return price.multiply(BigDecimal.valueOf(quantity));
     }
 }
