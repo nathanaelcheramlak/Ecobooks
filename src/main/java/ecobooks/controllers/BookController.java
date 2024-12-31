@@ -1,5 +1,6 @@
 package ecobooks.controllers;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -10,14 +11,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
 import ecobooks.models.BookModel;
 import ecobooks.services.BookService;
+import ecobooks.services.UserService;
+import ecobooks.utils.CloudinaryService;
 
 @RestController
 @RequestMapping("/api/v1/books")
@@ -25,29 +27,87 @@ public class BookController {
     @Autowired
     private final BookService bookService;
 
-    public BookController(BookService bookService) {
+    @Autowired
+    private final CloudinaryService cloudinaryService;
+
+    @Autowired
+    private final UserService userService;
+
+    public BookController(BookService bookService, CloudinaryService cloudinaryService, UserService userService) {
         this.bookService = bookService;
+        this.cloudinaryService = cloudinaryService;
+        this.userService = userService;
     }
 
-    // Add a book
     @PostMapping
-    public ResponseEntity<?> addBook(@RequestBody @Valid BookModel book) {
+    public ResponseEntity<?> addBook(
+        @RequestParam("title") String title,
+        @RequestParam(value = "description", required = false) String description,
+        @RequestParam("author") String author,
+        @RequestParam("price") BigDecimal price,
+        @RequestParam("quantity") Integer quantity,
+        @RequestParam(value = "genre", required = false) String genre,
+        @RequestParam("sellerId") Long sellerId,
+        @RequestParam(value = "image", required = false) MultipartFile image) {
+    
+        // Default Values
+        if (description == null) description = "No description available";
+        if (genre == null) genre = "General";
+    
+        // Handle the image file if it exists
+        String imageUrl = null;
+        if (image != null) {
+            imageUrl = cloudinaryService.uploadFile(image);  // Upload image and get the URL
+        }
+    
+        // Create the book object with the provided data
+        BookModel book = new BookModel(userService.getUserById(sellerId).get(), title, description, author, price, quantity, genre, imageUrl);
+    
+        // Add the book to the database
         BookModel newBook = bookService.addBook(book);
         return ResponseEntity.status(201).body(Map.of(
             "message", "Book uploaded successfully",
             "book", newBook
         ));
     }
+    
 
-    // Update a book by id
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateBook(@PathVariable Long id, @RequestBody @Valid BookModel book) {
-        BookModel updatedBook = bookService.updateBook(id, book);
+    public ResponseEntity<?> updateBook(@PathVariable Long id,
+                                        @RequestParam(value = "title", required = false) String title,
+                                        @RequestParam(value = "description", required = false) String description,
+                                        @RequestParam(value = "author", required = false) String author,
+                                        @RequestParam(value = "price", required = false) BigDecimal price,
+                                        @RequestParam(value = "quantity", required = false) Integer quantity,
+                                        @RequestParam(value = "genre", required = false) String genre,
+                                        @RequestParam(value = "image", required = false) MultipartFile image) {
+        
+        // Find the existing book by id
+        BookModel existingBook = bookService.getBookById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+
+        // Update only the provided fields
+        if (title != null) existingBook.setTitle(title);
+        if (description != null) existingBook.setDescription(description);
+        if (author != null) existingBook.setAuthor(author);
+        if (price != null) existingBook.setPrice(price);
+        if (quantity != null) existingBook.setQuantity(quantity);
+        if (genre != null) existingBook.setGenre(genre);
+        if (image != null) {
+            String imageUrl = cloudinaryService.uploadFile(image);  // Upload image and get the URL
+            existingBook.setImageUrl(imageUrl);
+        }
+
+        // Save the updated book
+        BookModel updatedBook = bookService.updateBook(id, existingBook);
+
+        // Return the updated book details in the response
         return ResponseEntity.ok(Map.of(
             "message", "Book updated successfully",
             "book", updatedBook
         ));
     }
+
 
     // Delete a book by id
     @DeleteMapping("/{id}")
