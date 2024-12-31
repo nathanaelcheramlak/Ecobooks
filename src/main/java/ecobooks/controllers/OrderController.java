@@ -35,7 +35,7 @@ public class OrderController {
         OrderModel newOrder = orderService.createOrder(order);
         return ResponseEntity.status(201).body(Map.of(
             "message", "Order created successfully",
-            "order", newOrder
+            "order", orderService.convertToDTO(newOrder)
         ));
     }
 
@@ -75,7 +75,7 @@ public class OrderController {
         return orderService.getOrderById(id)
             .map(order -> ResponseEntity.ok(Map.of(
                 "message", "Order retrieved successfully",
-                "order", order
+                "order", orderService.convertToDTO(order)
             )))
             .orElse(ResponseEntity.status(404).body(Map.of(
                 "error", "Order not found"
