@@ -1,6 +1,7 @@
 package ecobooks.models;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -40,7 +41,6 @@ public class OrderModel {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice;
 
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;
@@ -49,12 +49,11 @@ public class OrderModel {
     @Column(nullable = false)
     private String deliveryAddress;
 
-    @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    private LocalDateTime orderDate;
+    private LocalDate orderDate;
 
     @Column
-    private LocalDateTime deliveryDate;
+    private LocalDate deliveryDate;
 
     // Timestamps
     @CreationTimestamp
@@ -65,20 +64,28 @@ public class OrderModel {
     private LocalDateTime updatedAt;
 
     // Default Constructor
-    public OrderModel() {}
+    public OrderModel() {
+        this.orderDate = LocalDate.now();
+        this.deliveryDate = this.orderDate.plusDays(3);
+    }
 
-    public OrderModel(UserModel client, List<OrderItemModel> orderItems, BigDecimal totalPrice, OrderStatus status, String deliveryAddress, LocalDateTime deliveryDate) {
+    public OrderModel(UserModel client, List<OrderItemModel> orderItems, BigDecimal totalPrice, OrderStatus status, String deliveryAddress) {
         this.client = client;
         this.orderItems = orderItems;
         this.totalPrice = totalPrice;
         this.status = status;
         this.deliveryAddress = deliveryAddress;
-        this.deliveryDate = deliveryDate;
+        this.orderDate = LocalDate.now(); // Default orderDate if not set
+        this.deliveryDate = this.orderDate.plusDays(3);
     }
 
     // Getters and Setters
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public UserModel getClient() {
@@ -121,19 +128,20 @@ public class OrderModel {
         this.deliveryAddress = deliveryAddress;
     }
 
-    public LocalDateTime getOrderDate() {
+    public LocalDate getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(LocalDateTime orderDate) {
+    public void setOrderDate(LocalDate orderDate) {
         this.orderDate = orderDate;
+        this.deliveryDate = this.orderDate.plusDays(3); // Recalculate deliveryDate
     }
 
-    public LocalDateTime getDeliveryDate() {
+    public LocalDate getDeliveryDate() {
         return deliveryDate;
     }
 
-    public void setDeliveryDate(LocalDateTime deliveryDate) {
+    public void setDeliveryDate(LocalDate deliveryDate) {
         this.deliveryDate = deliveryDate;
     }
 
