@@ -88,6 +88,13 @@
 			<version>3.0.0</version>
 		</dependency>
 
+		<!-- Cloudinary for Image Management -->
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-http44</artifactId>
+            <version>1.31.0</version>
+        </dependency>
+
 	</dependencies>
 
 	<build>
