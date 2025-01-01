@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { useState } from "react";
 
 const Cart = () => {
@@ -91,8 +91,6 @@ const Cart = () => {
       </div>
     </div>
   );
-}
-
+};
 
 export default Cart;
->>>>>>> fee0c9d70952ffdc047e5ea9c9ec54c4858c06ce
