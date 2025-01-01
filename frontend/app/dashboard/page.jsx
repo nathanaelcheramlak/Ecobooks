@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
@@ -10,14 +10,34 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    // Simulate fetching admin stats (replace with API call later)
     const fetchStats = async () => {
-      const placeholderStats = {
-        totalBooks: 120,
-        totalOrders: 45,
-        totalRevenue: 899.99,
-      };
-      setStats(placeholderStats);
+      try {
+        const response = await fetch(
+          "http://localhost:8080/api/v1/orders/client/2"
+        );
+        const data = await response.json();
+
+        // Extract useful information
+        const totalOrders = data.orders.length;
+        const totalRevenue = data.orders.reduce(
+          (acc, order) => acc + order.totalPrice,
+          0
+        );
+        const totalBooks = data.orders.reduce(
+          (acc, order) =>
+            acc +
+            order.orderItems.reduce((sum, item) => sum + item.quantity, 0),
+          0
+        );
+
+        setStats({
+          totalBooks,
+          totalOrders,
+          totalRevenue,
+        });
+      } catch (error) {
+        console.error("Error fetching admin stats:", error);
+      }
     };
 
     fetchStats();
@@ -60,7 +80,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-
-}
+};
 
 export default Dashboard;

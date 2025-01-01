@@ -11,7 +11,7 @@ import "tailwindcss/tailwind.css";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-800 text-white p-4 shadow-lg mt-10">
+    <footer className="bg-gray-800 text-white p-4 shadow-lg mt-10 pb-0">
       <div className="container mx-auto flex justify-between items-center">
         {/* Branding/Logo and Description */}
         <div className="flex items-center space-x-2">
