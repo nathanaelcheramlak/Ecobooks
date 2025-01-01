@@ -1,18 +1,13 @@
 import React from "react";
 
-const BookCard = ({ book }) => {
-  const handleAddToCart = () => {
-    alert(`Added "${book.title}" to the cart!`);
-    // TODO: Implement actual cart logic (e.g., update global cart state)
-  };
-
+const BookCard = ({ book, handleAddToCart }) => {
   return (
     <div className="bg-white shadow-md rounded p-4 flex flex-col justify-between">
       {/* Book Image */}
       <img
         src={
-          book.image ||
-          "placeholder.png"
+          book.imageUrl ||
+          "bookPlaceholder.png"
         } // Use book.image or fallback to placeholder
         alt={book.title}
         className="w-full h-48 object-cover rounded mb-4"
