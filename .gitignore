@@ -76,3 +76,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+### Frontend ###
+Frontend/.next
+Frontend/node_modules
