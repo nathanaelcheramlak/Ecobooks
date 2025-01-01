@@ -79,5 +79,5 @@ build/
 
 
 ### Frontend ###
-Frontend/.next
-Frontend/node_modules
+frontend/.next
+frontend/node_modules
