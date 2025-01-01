@@ -1,6 +1,8 @@
-import React from "react";
+
+import { useRouter } from "next/navigation";
 
 const BookCard = ({ book, handleAddToCart }) => {
+  const router = useRouter();
   return (
     <div className="bg-white shadow-md rounded p-4 flex flex-col justify-between">
       {/* Book Image */}
@@ -11,6 +13,7 @@ const BookCard = ({ book, handleAddToCart }) => {
         } // Use book.image or fallback to placeholder
         alt={book.title}
         className="w-full h-48 object-cover rounded mb-4"
+        onClick={() => router.push(`/books/${book.id}`)}
       />
 
       {/* Book Title */}
