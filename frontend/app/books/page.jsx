@@ -11,56 +11,52 @@ export default function BooksPage() {
   const [filters, setFilters] = useState({ category: "", priceRange: "" }); // Store filter options
   const [filteredBooks, setFilteredBooks] = useState([]); // Books after filtering
 
+  const [cart, setCart] = useState([]);
+
   // Fetch books from the backend API
   useEffect(() => {
-    const placeholderBooks = [
-      {
-        id: 1,
-        title: "The Great Gatsby",
-        author: "F. Scott Fitzgerald",
-        price: 10.99,
-        image: "https://via.placeholder.com/150",
-        category: "Fiction",
-      },
-      {
-        id: 2,
-        title: "1984",
-        author: "George Orwell",
-        price: 9.99,
-        image: "https://img.freepik.com/free-vector/book_53876-58220.jpg",
-      },
-    ];
-    setBooks(placeholderBooks);
-    setFilteredBooks(placeholderBooks);
+    const fetchBooks = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/v1/books");
+        const data = await response.json();
+
+        setBooks(data.books);
+        setFilteredBooks(data.books);
+      } catch (error) {
+        console.error("Failed to fetch books: ", error);
+      }
+    }
+
+    fetchBooks();
   }, []);
 
 
   // Filter books based on search and filters
-  useEffect(() => {
-    let result = books;
+  // useEffect(() => {
+  //   let result = books;
 
-    // Search filter
-    if (searchQuery) {
-      result = result.filter(
-        (book) =>
-          book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          book.author.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
+  //   // Search filter
+  //   if (searchQuery) {
+  //     result = result.filter(
+  //       (book) =>
+  //         book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //         book.author.toLowerCase().includes(searchQuery.toLowerCase())
+  //     );
+  //   }
 
-    // Category filter
-    if (filters.category) {
-      result = result.filter((book) => book.category === filters.category);
-    }
+  //   // Category filter
+  //   if (filters.category) {
+  //     result = result.filter((book) => book.category === filters.category);
+  //   }
 
-    // Price range filter
-    if (filters.priceRange) {
-      const [min, max] = filters.priceRange.split("-").map(Number);
-      result = result.filter((book) => book.price >= min && book.price <= max);
-    }
+  //   // Price range filter
+  //   if (filters.priceRange) {
+  //     const [min, max] = filters.priceRange.split("-").map(Number);
+  //     result = result.filter((book) => book.price >= min && book.price <= max);
+  //   }
 
-    setFilteredBooks(result);
-  }, [searchQuery, filters, books]);
+  //   setFilteredBooks(result);
+  // }, [searchQuery, filters, books]);
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -71,7 +67,16 @@ export default function BooksPage() {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
+    console.log()
   };
+
+  const handleAddToCart = (book) => {
+    alert("Book added to cart" + book.title);
+    setCart([...cart, book]);
+    console.log(cart);
+  }
+
+  const handleSearch = () => {}
 
   return (
     <div className="container mx-auto p-8">
@@ -115,15 +120,16 @@ export default function BooksPage() {
           <option value="20-50">20 - 50 USD</option>
           <option value="50-100">50 - 100 USD</option>
         </select>
+        <button className="font-bold py-4 px-8 border border-black rounded-md hover:bg-yellow-500 hover:text-white" onClick={handleSearch}>
+          Search
+        </button>
       </div>
 
       {/* Books Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filteredBooks.length > 0 ? (
+        {filteredBooks && filteredBooks.length > 0 ? (
           filteredBooks.map((book) => (
-            <Link href={`/books/${book.id}`} key={book.id}>
-              <BookCard book={book} />
-            </Link> // Pass the full book object
+              <BookCard book={book} handleAddToCart={() => handleAddToCart(book)}/>
           ))
         ) : (
           <p>No books found.</p>
