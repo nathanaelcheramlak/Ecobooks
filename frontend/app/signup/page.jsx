@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/context/UserContext";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -11,6 +12,8 @@ const Signup = () => {
   const [image, setImage] = useState(null);
   const [error, setError] = useState({});
   const [loading, setLoading] = useState(false);
+
+  const { setUser } = useUser();
   const router = useRouter();
 
   const validateForm = () => {
@@ -46,11 +49,12 @@ const Signup = () => {
       
       setLoading(false);
       const data = await response.json();
-      console.log(data);
       if (!response.ok) {
         setError({ signup: data.error });
         return;
       }
+
+      setUser(data.user);
       router.push("/");
     } catch (error) {
       console.log("Error Signing up.", error.message);

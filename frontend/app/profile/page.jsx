@@ -1,61 +1,83 @@
 "use client";
 import { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function ProfilePage() {
-  const [userDetails, setUserDetails] = useState({
-    name: "",
-    email: "",
-    address: "",
-  });
-
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      date: "2023-12-20",
-      total: 29.97,
-      items: [
-        { title: "The Great Gatsby", quantity: 1 },
-        { title: "1984", quantity: 2 },
-      ],
-    },
-    {
-      id: 2,
-      date: "2023-12-18",
-      total: 10.99,
-      items: [{ title: "To Kill a Mockingbird", quantity: 1 }],
-    },
-  ]);
-
+  const [userDetails, setUserDetails] = useState({});
+  const [userOrders, setUserOrders] = useState([]);
   const [editing, setEditing] = useState(false);
-  const [editedDetails, setEditedDetails] = useState(userDetails);
+
+  // Fetch user details and orders
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/v1/auth/verify", {
+          credentials: "include",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUserDetails(data.user);
+        } else {
+          setUserDetails(null);
+        }
+      } catch (error) {
+        console.error("Error fetching user details: " + error.message);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
-    // Fetch user details from the endpoint
-    fetch("http://localhost:8080/api/v1/auth/verify")
-      .then((response) => response.json())
-      .then((data) => {
-        setUserDetails(data);
-        setEditedDetails(data);
-      })
-      .catch((error) => console.error("Error fetching user details:", error));
-  }, []);
+    if (userDetails.id) {
+      const fetchOrders = async () => {
+        try {
+          const response = await fetch(`http://localhost:8080/api/v1/orders/client/${userDetails.id}`, {
+            credentials: "include",
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setUserOrders(data.orders);
+          }
+        } catch (error) {
+          console.error("Error fetching user orders: " + error.message);
+        }
+      };
+
+      fetchOrders();
+    }
+  }, [userDetails.id]);
 
   // Handle profile edit input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditedDetails((prev) => ({ ...prev, [name]: value }));
+    setUserDetails((prev) => ({ ...prev, [name]: value }));
   };
 
   // Save updated profile details
-  const handleSave = () => {
-    setUserDetails(editedDetails);
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/users/${userDetails.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userDetails),
+      });
+      if (response.ok) {
+        toast.success("Profile updated successfully.");
+      }
+    } catch (error) {
+      console.error("Error updating user profile: " + error.message);
+      toast.error("Failed to update profile: " + error.message);
+    }
     setEditing(false);
   };
 
   // Handle order cancellation
   const handleCancelOrder = (id) => {
     if (confirm("Are you sure you want to cancel this order?")) {
-      setOrders((prevOrders) => prevOrders.filter((order) => order.id !== id));
+      setUserOrders((prevOrders) => prevOrders.filter((order) => order.id !== id));
       alert(`Order ${id} has been canceled.`);
     }
   };
@@ -72,7 +94,7 @@ export default function ProfilePage() {
             <input
               type="text"
               name="name"
-              value={editedDetails.name}
+              value={userDetails.name || ""}
               onChange={handleInputChange}
               placeholder="Name"
               className="w-full border border-gray-300 rounded p-2"
@@ -80,17 +102,17 @@ export default function ProfilePage() {
             <input
               type="email"
               name="email"
-              value={editedDetails.email}
+              value={userDetails.email || ""}
               onChange={handleInputChange}
               placeholder="Email"
               className="w-full border border-gray-300 rounded p-2"
             />
             <input
               type="text"
-              name="address"
-              value={editedDetails.address}
+              name="phoneNumber"
+              value={userDetails.phoneNumber || ""}
               onChange={handleInputChange}
-              placeholder="Address"
+              placeholder="Phone Number"
               className="w-full border border-gray-300 rounded p-2"
             />
             <button
@@ -109,7 +131,7 @@ export default function ProfilePage() {
               <strong>Email:</strong> {userDetails.email}
             </p>
             <p>
-              <strong>Address:</strong> {userDetails.address}
+              <strong>Phone Number:</strong> {userDetails.phoneNumber}
             </p>
             <button
               onClick={() => setEditing(true)}
@@ -124,9 +146,9 @@ export default function ProfilePage() {
       {/* Order History */}
       <div className="bg-white shadow-md rounded p-4">
         <h2 className="text-2xl font-bold mb-4">Order History</h2>
-        {orders.length > 0 ? (
+        {userOrders && userOrders.length > 0 ? (
           <div className="space-y-4">
-            {orders.map((order) => (
+            {userOrders.map((order) => (
               <div
                 key={order.id}
                 className="border border-gray-300 rounded p-4 flex justify-between items-start"
@@ -141,16 +163,14 @@ export default function ProfilePage() {
                   <p>
                     <strong>Total:</strong> ${order.total.toFixed(2)}
                   </p>
-                  <p>
-                    <strong>Items:</strong>
-                    <ul className="list-disc ml-4">
-                      {order.items.map((item, index) => (
-                        <li key={index}>
-                          {item.title} (x{item.quantity})
-                        </li>
-                      ))}
-                    </ul>
-                  </p>
+                  <strong>Items:</strong>
+                  <ul className="list-disc ml-4">
+                    {order.items.map((item, index) => (
+                      <li key={index}>
+                        {item.title} (x{item.quantity})
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 <button
                   onClick={() => handleCancelOrder(order.id)}
@@ -165,6 +185,7 @@ export default function ProfilePage() {
           <p>No orders found.</p>
         )}
       </div>
+      <ToastContainer position="bottom-right" autoClose={2000} />
     </div>
   );
 }

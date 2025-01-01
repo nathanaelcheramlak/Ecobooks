@@ -1,82 +1,70 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from "react";
 import BookCard from "../../components/BookCard"; // Import the BookCard component
-import Link from "next/link";
-// import axios from "axios"; // For API calls
+import { useCart } from "@/context/CartContext";
 
 export default function BooksPage() {
   const [books, setBooks] = useState([]); // Store the list of books
   const [searchQuery, setSearchQuery] = useState(""); // Store the search input
   const [filters, setFilters] = useState({ category: "", priceRange: "" }); // Store filter options
   const [filteredBooks, setFilteredBooks] = useState([]); // Books after filtering
-
-  const [cart, setCart] = useState([]);
+  const { addToCart } = useCart();
 
   // Fetch books from the backend API
   useEffect(() => {
     const fetchBooks = async () => {
       try {
         const response = await fetch("http://localhost:8080/api/v1/books");
+        if (!response.ok) throw new Error("Failed to fetch books.");
         const data = await response.json();
-
         setBooks(data.books);
         setFilteredBooks(data.books);
       } catch (error) {
-        console.error("Failed to fetch books: ", error);
+        console.error(error.message);
       }
-    }
+    };
 
     fetchBooks();
   }, []);
 
-
   // Filter books based on search and filters
-  // useEffect(() => {
-  //   let result = books;
+  useEffect(() => {
+    let filtered = books;
 
-  //   // Search filter
-  //   if (searchQuery) {
-  //     result = result.filter(
-  //       (book) =>
-  //         book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //         book.author.toLowerCase().includes(searchQuery.toLowerCase())
-  //     );
-  //   }
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(
+        (book) =>
+          book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          book.author.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
 
-  //   // Category filter
-  //   if (filters.category) {
-  //     result = result.filter((book) => book.category === filters.category);
-  //   }
+    if (filters.category) {
+      filtered = filtered.filter((book) => book.category === filters.category);
+    }
 
-  //   // Price range filter
-  //   if (filters.priceRange) {
-  //     const [min, max] = filters.priceRange.split("-").map(Number);
-  //     result = result.filter((book) => book.price >= min && book.price <= max);
-  //   }
+    if (filters.priceRange) {
+      const [minPrice, maxPrice] = filters.priceRange.split("-").map(Number);
+      filtered = filtered.filter(
+        (book) => book.price >= minPrice && book.price <= maxPrice
+      );
+    }
 
-  //   setFilteredBooks(result);
-  // }, [searchQuery, filters, books]);
-
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
+    setFilteredBooks(filtered);
+  }, [searchQuery, filters, books]);
 
   // Handle filter changes
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
-    console.log()
   };
 
+  // Add book to cart
   const handleAddToCart = (book) => {
-    alert("Book added to cart" + book.title);
-    setCart([...cart, book]);
-    console.log(cart);
-  }
-
-  const handleSearch = () => {}
+    addToCart(book);
+    alert(`"${book.title}" has been added to your cart.`);
+  };
 
   return (
     <div className="container mx-auto p-8">
@@ -89,7 +77,7 @@ export default function BooksPage() {
           type="text"
           placeholder="Search by title or author"
           value={searchQuery}
-          onChange={handleSearchChange}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="border border-gray-300 rounded p-2 w-full sm:w-1/3"
         />
 
@@ -120,16 +108,17 @@ export default function BooksPage() {
           <option value="20-50">20 - 50 USD</option>
           <option value="50-100">50 - 100 USD</option>
         </select>
-        <button className="font-bold py-4 px-8 border border-black rounded-md hover:bg-yellow-500 hover:text-white" onClick={handleSearch}>
-          Search
-        </button>
       </div>
 
       {/* Books Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filteredBooks && filteredBooks.length > 0 ? (
+        {filteredBooks.length > 0 ? (
           filteredBooks.map((book) => (
-              <BookCard book={book} handleAddToCart={() => handleAddToCart(book)}/>
+            <BookCard
+              key={book.id}
+              book={book}
+              handleAddToCart={() => handleAddToCart(book)}
+            />
           ))
         ) : (
           <p>No books found.</p>
