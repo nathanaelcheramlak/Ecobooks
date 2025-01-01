@@ -1,5 +1,4 @@
-'use client'
-
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -17,7 +16,37 @@ import "tailwindcss/tailwind.css";
 import { useState } from "react";
 
 const Header = () => {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState(null); // null means anonymous user
+
+  // Define navigation based on role
+  const navigationLinks = {
+    anonymous: [
+      { href: "/", label: "Home", icon: faHome },
+      { href: "/free-books", label: "Free Books", icon: faBookOpenReader },
+      { href: "/login", label: "Login", icon: faUser },
+    ],
+    user: [
+      { href: "/", label: "Home", icon: faHome },
+      { href: "/free-books", label: "Free Books", icon: faBookOpenReader },
+      { href: "/books", label: "Books", icon: faBook },
+      { href: "/cart", label: "Cart", icon: faShoppingCart },
+      { href: "/profile", label: "Profile", icon: faUser },
+    ],
+    admin: [
+      { href: "/admin", label: "Dashboard", icon: faTachometerAlt },
+      { href: "/admin/books", label: "Manage Books", icon: faBookOpen },
+      { href: "/admin/orders", label: "Manage Orders", icon: faClipboardList },
+      { href: "/profile", label: "Profile", icon: faUser },
+    ],
+  };
+
+  // Determine the current navigation links
+  const currentLinks =
+    user?.role === "admin"
+      ? navigationLinks.admin
+      : user?.role === "user"
+      ? navigationLinks.user
+      : navigationLinks.anonymous;
 
   return (
     <header className="bg-gradient-to-r from-purple-950 via-purple-700 to-pink-900 text-white p-4 shadow-lg">
@@ -31,76 +60,22 @@ const Header = () => {
                 alt="Abrehot Books"
                 width={50}
                 height={50}
+                className="rounded-xl"
               />
               <span>Abrehot Books</span>
             </a>
           </Link>
         </h1>
-
         {/* Navigation Links */}
         <nav className="flex space-x-6">
-          {/* Links for All Users */}
-          <Link href="/" legacyBehavior>
-            <a className="hover:text-yellow-300 flex items-center space-x-2">
-              <FontAwesomeIcon icon={faHome} />
-              <span>Home</span>
-            </a>
-          </Link>
-          <Link href="/books" legacyBehavior>
-            <a className="hover:text-yellow-300 flex items-center space-x-2">
-              <FontAwesomeIcon icon={faBook} />
-              <span>Books</span>
-            </a>
-          </Link>
-
-          <Link href="/" legacyBehavior>
-            <a className="hover:text-yellow-300 flex items-center space-x-2">
-              <FontAwesomeIcon icon={faBook} />
-              <span>Free Books</span>
-            </a>
-          </Link>
-
-          {/* Links for Regular Users */}
-          {user.role === "user" && (
-            <>
-              <Link href="/cart" legacyBehavior>
-                <a className="hover:text-yellow-300 flex items-center space-x-2">
-                  <FontAwesomeIcon icon={faShoppingCart} />
-                  <span>Cart</span>
-                </a>
-              </Link>
-              <Link href="/profile" legacyBehavior>
-                <a className="hover:text-yellow-300 flex items-center space-x-2">
-                  <FontAwesomeIcon icon={faUser} />
-                  <span>Profile</span>
-                </a>
-              </Link>
-            </>
-          )}
-
-          {/* Links for Admins */}
-          {user.role === "admin" && (
-            <>
-              <Link href="/admin" legacyBehavior>
-                <a className="hover:text-yellow-300 flex items-center space-x-2">
-                  <FontAwesomeIcon icon={faTachometerAlt} />
-                  <span>Dashboard</span>
-                </a>
-              </Link>
-              <Link href="/admin/books" legacyBehavior>
-                <a className="hover:text-yellow-300 flex items-center space-x-2">
-                  <FontAwesomeIcon icon={faBookOpen} />
-                  <span>Manage Books</span>
-                </a>
-              </Link>
-              <Link href="/admin/orders" legacyBehavior>
-                <a className="hover:text-yellow-300 flex items-center space-x-2">
-                  <FontAwesomeIcon icon={faClipboardList} />
-                  <span>Manage Orders</span>
-                </a>
-              </Link>
-            </>
-          )}
+          {currentLinks.map((link) => (
+            <Link href={link.href} key={link.label} legacyBehavior>
+              <a className="hover:text-yellow-300 flex items-center space-x-2">
+                <FontAwesomeIcon icon={link.icon} />
+                <span>{link.label}</span>
+              </a>
+            </Link>
+          ))}
         </nav>
       </div>
     </header>
