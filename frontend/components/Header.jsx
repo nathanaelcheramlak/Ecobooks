@@ -13,10 +13,28 @@ import {
   faBookOpenReader,
 } from "@fortawesome/free-solid-svg-icons";
 import "tailwindcss/tailwind.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Header = () => {
-  const [user, setUser] = useState(null); // null means anonymous user
+  const [user, setUser] = useState(null); 
+  useEffect(() => {
+    const verifyUser = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/v1/auth/verify', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+          console.log(data.user);
+        }
+      } catch (error) {
+        console.log("Error verifying user." + error.message);
+      }
+    }
+
+    verifyUser();
+  }, [])
 
   // Define navigation based on role
   const navigationLinks = {
@@ -33,18 +51,18 @@ const Header = () => {
       { href: "/profile", label: "Profile", icon: faUser },
     ],
     admin: [
-      { href: "/admin", label: "Dashboard", icon: faTachometerAlt },
-      { href: "/admin/books", label: "Manage Books", icon: faBookOpen },
-      { href: "/admin/orders", label: "Manage Orders", icon: faClipboardList },
+      { href: "/dashboard", label: "Dashboard", icon: faTachometerAlt },
+      { href: "/manage-book", label: "Manage Books", icon: faBookOpen },
+      { href: "/manage-order", label: "Manage Orders", icon: faClipboardList },
       { href: "/profile", label: "Profile", icon: faUser },
     ],
   };
 
   // Determine the current navigation links
   const currentLinks =
-    user?.role === "admin"
+    user?.role === "SELLER"
       ? navigationLinks.admin
-      : user?.role === "user"
+      : user?.role === "CLIENT"
       ? navigationLinks.user
       : navigationLinks.anonymous;
 
