@@ -1,11 +1,11 @@
-'use client'
-import { useState } from "react";
+"use client";
+import { useState, useEffect } from "react";
 
 export default function ProfilePage() {
   const [userDetails, setUserDetails] = useState({
-    name: "John Doe",
-    email: "johndoe@example.com",
-    address: "123 Main St, Springfield",
+    name: "",
+    email: "",
+    address: "",
   });
 
   const [orders, setOrders] = useState([
@@ -28,6 +28,17 @@ export default function ProfilePage() {
 
   const [editing, setEditing] = useState(false);
   const [editedDetails, setEditedDetails] = useState(userDetails);
+
+  useEffect(() => {
+    // Fetch user details from the endpoint
+    fetch("http://localhost:8080/api/v1/auth/verify")
+      .then((response) => response.json())
+      .then((data) => {
+        setUserDetails(data);
+        setEditedDetails(data);
+      })
+      .catch((error) => console.error("Error fetching user details:", error));
+  }, []);
 
   // Handle profile edit input changes
   const handleInputChange = (e) => {
