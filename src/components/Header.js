@@ -53,7 +53,7 @@ const Header = () => {
 
           <Link href="/" legacyBehavior>
             <a className="hover:text-yellow-300 flex items-center space-x-2">
-              <FontAwesomeIcon icon={faHome} />
+              <FontAwesomeIcon icon={fa} />
               <span>Free Books</span>
             </a>
           </Link>
