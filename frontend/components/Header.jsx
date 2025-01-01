@@ -14,9 +14,11 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import "tailwindcss/tailwind.css";
 import { useEffect, useState } from "react";
+import { useUser } from "@/context/UserContext";
 
 const Header = () => {
-  const [user, setUser] = useState(null); 
+  const [Cuser, setCUser] = useState(null); 
+  const { setUser } = useUser();
   useEffect(() => {
     const verifyUser = async () => {
       try {
@@ -25,8 +27,8 @@ const Header = () => {
         });
         if (response.ok) {
           const data = await response.json();
+          setCUser(data.user);
           setUser(data.user);
-          console.log(data.user);
         }
       } catch (error) {
         console.log("Error verifying user." + error.message);
@@ -60,9 +62,9 @@ const Header = () => {
 
   // Determine the current navigation links
   const currentLinks =
-    user?.role === "SELLER"
+    Cuser?.role === "SELLER"
       ? navigationLinks.admin
-      : user?.role === "CLIENT"
+      : Cuser?.role === "CLIENT"
       ? navigationLinks.user
       : navigationLinks.anonymous;
 
