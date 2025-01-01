@@ -2,7 +2,7 @@
 
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { useUser } from "@/context/UserContext";
 
@@ -10,6 +10,7 @@ const Cart = () => {
     const router = useRouter();
     const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
     const { user } = useUser(); 
+    const [deliveryAddress, setDeliveryAddress] = useState('');
 
     const totalPrice = useMemo(
         () => cartItems.reduce((total, item) => total + item.price * item.quantity, 0),
@@ -47,8 +48,7 @@ const Cart = () => {
             price: item.price,
           })),
           status: "PENDING",
-          deliveryAddress: "123 Main St, Springfield",
-          deliveryDate: "2024-12-31",
+          deliveryAddress,
         };
 
         console.log("User", user);
@@ -114,6 +114,10 @@ const Cart = () => {
             ) : (
                 <p className="text-center font-extralight text-xl my-48">Your cart is empty.</p>
             )}
+            <div className="my-8">
+              <lable className="text-xl">Delivery Address: </lable>
+              <input type='text' className="border border-black py-2 px-4 rounded-md" value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)}/>
+            </div>
 
             <div className="mt-8">
                 <h2 className="text-2xl font-bold">Total: ${totalPrice.toFixed(2)}</h2>

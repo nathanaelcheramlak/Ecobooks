@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -18,12 +19,13 @@ import { useUser } from "@/context/UserContext";
 
 const Header = () => {
   const [Cuser, setCUser] = useState(null); 
-  const { setUser } = useUser();
+  const { user, setUser } = useUser();
+
   useEffect(() => {
     const verifyUser = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/v1/auth/verify', {
-          credentials: 'include',
+        const response = await fetch("http://localhost:8080/api/v1/auth/verify", {
+          credentials: "include",
         });
         if (response.ok) {
           const data = await response.json();
@@ -33,10 +35,10 @@ const Header = () => {
       } catch (error) {
         console.log("Error verifying user." + error.message);
       }
-    }
+    };
 
     verifyUser();
-  }, [])
+  }, []);
 
   // Define navigation based on role
   const navigationLinks = {
@@ -62,9 +64,9 @@ const Header = () => {
 
   // Determine the current navigation links
   const currentLinks =
-    Cuser?.role === "SELLER"
+    user?.role === "SELLER"
       ? navigationLinks.admin
-      : Cuser?.role === "CLIENT"
+      : user?.role === "CLIENT"
       ? navigationLinks.user
       : navigationLinks.anonymous;
 
@@ -91,7 +93,9 @@ const Header = () => {
           {currentLinks.map((link) => (
             <Link href={link.href} key={link.label} legacyBehavior>
               <a className="hover:text-yellow-300 flex items-center space-x-2">
-                <FontAwesomeIcon icon={link.icon} />
+                {link.icon ? ( // Ensure icon is valid
+                  <FontAwesomeIcon icon={link.icon} />
+                ) : null}
                 <span>{link.label}</span>
               </a>
             </Link>

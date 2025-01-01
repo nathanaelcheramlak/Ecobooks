@@ -1,12 +1,15 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/context/UserContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState({});
   const [loading, setLoading] = useState(false);
+
+  const { setUser } = useUser();
 
   const router = useRouter();
 
@@ -41,7 +44,7 @@ const Login = () => {
         setError({ login: data.error });
         return;
       }
-
+      // setUser(data.user);
       router.push('/');
     } catch (error) {
       console.log('Error Logging in.', error.message);
