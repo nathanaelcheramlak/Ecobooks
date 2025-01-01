@@ -16,13 +16,16 @@ import "tailwindcss/tailwind.css";
 import { useEffect, useState } from "react";
 
 const Header = () => {
-  const [user, setUser] = useState(null); 
+  const [user, setUser] = useState(null);
   useEffect(() => {
     const verifyUser = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/v1/auth/verify', {
-          credentials: 'include',
-        });
+        const response = await fetch(
+          "http://localhost:8080/api/v1/auth/verify",
+          {
+            credentials: "include",
+          }
+        );
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
@@ -31,10 +34,10 @@ const Header = () => {
       } catch (error) {
         console.log("Error verifying user." + error.message);
       }
-    }
+    };
 
     verifyUser();
-  }, [])
+  }, []);
 
   // Define navigation based on role
   const navigationLinks = {
@@ -67,7 +70,7 @@ const Header = () => {
       : navigationLinks.anonymous;
 
   return (
-    <header className="bg-gradient-to-r from-purple-950 via-purple-700 to-pink-900 text-white p-4 shadow-lg">
+    <header className="bg-black text-white p-4 shadow-lg bg-opacity-88 backdrop-filter backdrop-blur-lg">
       <div className="container mx-auto flex justify-between items-center">
         {/* Branding/Logo */}
         <h1 className="text-2xl font-bold flex items-center space-x-2">
