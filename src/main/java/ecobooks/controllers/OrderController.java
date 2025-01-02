@@ -2,6 +2,7 @@ package ecobooks.controllers;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import ecobooks.DTO.OrderDTO;
 import ecobooks.models.OrderModel;
 import ecobooks.services.OrderService;
 import jakarta.validation.Valid;
@@ -89,6 +91,17 @@ public class OrderController {
         return ResponseEntity.ok(Map.of(
             "message", "Orders retrieved successfully",
             "orders", orders,
+            "count", orders.size()
+        ));
+    }
+    
+    // Get orders by seller
+    @GetMapping("/seller/{sellerId}")
+    public ResponseEntity<?> getOrdersBySeller(@PathVariable Long sellerId) {
+        List<OrderModel> orders = orderService.getOrdersBySeller(sellerId);
+        return ResponseEntity.ok(Map.of(
+            "message", "Orders retrieved successfully",
+            "orders", orders.stream().map(orderService::convertToDTO).collect(Collectors.toList()),
             "count", orders.size()
         ));
     }

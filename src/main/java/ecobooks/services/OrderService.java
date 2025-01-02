@@ -138,6 +138,15 @@ public class OrderService {
         return orderRepository.findByClient(client.get());
     }
 
+    // Get order by seller
+    public List<OrderModel> getOrdersBySeller(Long sellerId) {
+        if (!userRepository.existsById(sellerId)) {
+            throw new NoSuchElementException("Seller with ID " + sellerId + " not found");
+        }
+        return orderRepository.findOrdersBySellerId(sellerId);
+    }
+    
+
     // Get order by client and status
     public List<OrderModel> getOrderByClientAndStatus(Long clientId, String status) {
         if (!userRepository.existsById(clientId)) {
