@@ -2,18 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHome,
-  faBook,
-  faShoppingCart,
-  faUser,
-  faTachometerAlt,
-  faBookOpen,
-  faClipboardList,
-  faBookOpenReader,
-} from "@fortawesome/free-solid-svg-icons";
-import "tailwindcss/tailwind.css";
 import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
 
@@ -43,22 +31,22 @@ const Header = () => {
   // Define navigation based on role
   const navigationLinks = {
     anonymous: [
-      { href: "/", label: "Home", icon: faHome },
-      { href: "/free-books", label: "Free Books", icon: faBookOpenReader },
-      { href: "/login", label: "Login", icon: faUser },
+      { href: "/", label: "Home" },
+      { href: "/free-books", label: "Free Books" },
+      { href: "/login", label: "Login" },
     ],
     user: [
-      { href: "/", label: "Home", icon: faHome },
-      { href: "/free-books", label: "Free Books", icon: faBookOpenReader },
-      { href: "/books", label: "Books", icon: faBook },
-      { href: "/cart", label: "Cart", icon: faShoppingCart },
-      { href: "/profile", label: "Profile", icon: faUser },
+      { href: "/", label: "Home" },
+      { href: "/free-books", label: "Free Books" },
+      { href: "/books", label: "Books" },
+      { href: "/cart", label: "Cart" },
+      { href: "/profile", label: "Profile" },
     ],
     admin: [
-      { href: "/dashboard", label: "Dashboard", icon: faTachometerAlt },
-      { href: "/manage-book", label: "Manage Books", icon: faBookOpen },
-      { href: "/manage-order", label: "Manage Orders", icon: faClipboardList },
-      { href: "/profile", label: "Profile", icon: faUser },
+      { href: "/dashboard", label: "Dashboard" },
+      { href: "/manage-book", label: "Manage Books" },
+      { href: "/manage-order", label: "Manage Orders" },
+      { href: "/profile", label: "Profile" },
     ],
   };
 
@@ -92,12 +80,7 @@ const Header = () => {
         <nav className="flex space-x-6">
           {currentLinks.map((link) => (
             <Link href={link.href} key={link.label} legacyBehavior>
-              <a className="hover:text-yellow-300 flex items-center space-x-2">
-                {link.icon ? ( // Ensure icon is valid
-                  <FontAwesomeIcon icon={link.icon} />
-                ) : null}
-                <span>{link.label}</span>
-              </a>
+              <a className="hover:text-yellow-300">{link.label}</a>
             </Link>
           ))}
         </nav>

@@ -1,11 +1,15 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
+import {useRouter} from "next/navigation";
 
 export default function ProfilePage() {
   const [userDetails, setUserDetails] = useState({});
   const [userOrders, setUserOrders] = useState([]);
   const [editing, setEditing] = useState(false);
+
+  const router = useRouter();
 
   // Fetch user details and orders
   useEffect(() => {
@@ -29,12 +33,13 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    if (userDetails.id) {
+    if (userDetails?.id) {
       const fetchOrders = async () => {
         try {
-          const response = await fetch(`http://localhost:8080/api/v1/orders/client/${userDetails.id}`, {
-            credentials: "include",
-          });
+          const response = await fetch(
+            `http://localhost:8080/api/v1/orders/client/${userDetails.id}`,
+            { credentials: "include" }
+          );
           if (response.ok) {
             const data = await response.json();
             setUserOrders(data.orders);
@@ -46,7 +51,7 @@ export default function ProfilePage() {
 
       fetchOrders();
     }
-  }, [userDetails.id]);
+  }, [userDetails]);
 
   // Handle profile edit input changes
   const handleInputChange = (e) => {
@@ -75,10 +80,41 @@ export default function ProfilePage() {
   };
 
   // Handle order cancellation
-  const handleCancelOrder = (id) => {
+  const handleCancelOrder = async (id) => {
     if (confirm("Are you sure you want to cancel this order?")) {
-      setUserOrders((prevOrders) => prevOrders.filter((order) => order.id !== id));
-      alert(`Order ${id} has been canceled.`);
+      try {
+        const response = await fetch(`http://localhost:8080/api/v1/orders/${id}`, {
+          credentials: "include",
+          method: "DELETE",
+        });
+        if (response.ok) {
+          setUserOrders((prevOrders) => prevOrders.filter((order) => order.id !== id));
+          toast.success("Order canceled successfully.");
+        } else {
+          toast.error("Failed to cancel order.");
+        }
+      } catch (error) {
+        console.error("Error canceling order: " + error.message);
+        toast.error("Failed to cancel order: " + error.message);
+      }
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/v1/auth/logout", {
+        credentials: "include",
+      });
+      if (response.ok) {
+        toast.success("Logged out successfully.");
+        setUserDetails(null);
+        router.push("/");
+      } else {
+        toast.error("Failed to logout.");
+      }
+    } catch (error) {
+      console.error("Error logging out: " + error.message);
+      toast.error("Failed to logout: " + error.message);
     }
   };
 
@@ -125,13 +161,13 @@ export default function ProfilePage() {
         ) : (
           <div>
             <p>
-              <strong>Name:</strong> {userDetails.name}
+              <strong>Name:</strong> {userDetails?.name || "N/A"}
             </p>
             <p>
-              <strong>Email:</strong> {userDetails.email}
+              <strong>Email:</strong> {userDetails?.email || "N/A"}
             </p>
             <p>
-              <strong>Phone Number:</strong> {userDetails.phoneNumber}
+              <strong>Phone Number:</strong> {userDetails?.phoneNumber || "N/A"}
             </p>
             <button
               onClick={() => setEditing(true)}
@@ -139,52 +175,65 @@ export default function ProfilePage() {
             >
               Edit Profile
             </button>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition mt-4 ml-4"
+            >
+              Logout
+            </button>
           </div>
         )}
       </div>
 
       {/* Order History */}
-      <div className="bg-white shadow-md rounded p-4">
-        <h2 className="text-2xl font-bold mb-4">Order History</h2>
-        {userOrders && userOrders.length > 0 ? (
-          <div className="space-y-4">
-            {userOrders.map((order) => (
-              <div
-                key={order.id}
-                className="border border-gray-300 rounded p-4 flex justify-between items-start"
-              >
-                <div>
-                  <p>
-                    <strong>Order ID:</strong> {order.id}
-                  </p>
-                  <p>
-                    <strong>Date:</strong> {order.date}
-                  </p>
-                  <p>
-                    <strong>Total:</strong> ${order.total.toFixed(2)}
-                  </p>
-                  <strong>Items:</strong>
-                  <ul className="list-disc ml-4">
-                    {order.items.map((item, index) => (
-                      <li key={index}>
-                        {item.title} (x{item.quantity})
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <button
-                  onClick={() => handleCancelOrder(order.id)}
-                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+      {userDetails?.role === "CLIENT" && (
+        <div className="bg-white shadow-md rounded p-4">
+          <h2 className="text-2xl font-bold mb-4">Order History</h2>
+          {userOrders?.length > 0 ? (
+            <div className="space-y-4">
+              {userOrders.map((order) => (
+                <div
+                  key={order.id}
+                  className="border border-gray-300 rounded p-4 flex justify-between items-start"
                 >
-                  Cancel Order
-                </button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>No orders found.</p>
-        )}
-      </div>
+                  <div>
+                    <p>
+                      <strong>Order ID:</strong> {order.id}
+                    </p>
+                    <p>
+                      <strong>Address:</strong> {order.deliveryAddress}
+                    </p>
+                    <p>
+                      <strong>Total:</strong> ${order.totalPrice.toFixed(2)}
+                    </p>
+                    <p>
+                      <strong>Status:</strong> {order.status}
+                    </p>
+                    <strong>Items:</strong>
+                    <ul className="list-disc ml-4">
+                      {order.orderItems.map((item, index) => (
+                        <li key={index}>
+                          {item.book.title} (x{item.quantity})
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  {order.status === "PENDING" && (
+                    <button
+                      onClick={() => handleCancelOrder(order.id)}
+                      className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>No orders found.</p>
+          )}
+        </div>
+      )}
       <ToastContainer position="bottom-right" autoClose={2000} />
     </div>
   );

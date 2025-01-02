@@ -39,7 +39,10 @@ const Cart = () => {
     const handleCheckout = async() => {
       try {
         console.log("Order Placing...");
-
+        if (deliveryAddress == '') {
+          toast.error("Please enter a delivery address.");
+          return;
+        }
         const orderData = {
           client: { id: user.id },
           orderItems: cartItems.map((item) => ({
@@ -63,15 +66,14 @@ const Cart = () => {
         });
         if (response.ok) {
           toast.success("Order placed successfully.");
-          setTimeout(() => {
-            // router.push("/checkout");
-          }, 1500);
+          setTimeout(() => {}, 1500);
           clearCart();
         }
         const data = await response.json();
         console.log(data);
+        toast.error("Failed to place order." + data.error);
       } catch (error) {
-        console.error(error.message);
+        console.log(error.message);
         toast.error("Failed to place order." + error.message);
         return;   
       }
@@ -116,7 +118,7 @@ const Cart = () => {
             )}
             <div className="my-8">
               <lable className="text-xl">Delivery Address: </lable>
-              <input type='text' className="border border-black py-2 px-4 rounded-md" value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)}/>
+              <input type='text' className="border border-black py-2 px-4 rounded-sm" value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)}/>
             </div>
 
             <div className="mt-8">

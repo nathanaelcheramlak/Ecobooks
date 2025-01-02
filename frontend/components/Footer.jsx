@@ -1,13 +1,6 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faGithub,
-  faTwitter,
-  faFacebook,
-} from "@fortawesome/free-solid-svg-icons";
-import "tailwindcss/tailwind.css";
 
 const Footer = () => {
   return (
@@ -41,19 +34,16 @@ const Footer = () => {
             legacyBehavior
           >
             <a className="hover:text-yellow-300 flex items-center space-x-2">
-              <FontAwesomeIcon icon={faGithub} />
               <span>GitHub</span>
             </a>
           </Link>
           <Link href="https://twitter.com/yididiabera" legacyBehavior>
             <a className="hover:text-yellow-300 flex items-center space-x-2">
-              <FontAwesomeIcon icon={faTwitter} />
               <span>Twitter</span>
             </a>
           </Link>
           <Link href="https://facebook.com/your-facebook" legacyBehavior>
             <a className="hover:text-yellow-300 flex items-center space-x-2">
-              <FontAwesomeIcon icon={faFacebook} />
               <span>Facebook</span>
             </a>
           </Link>

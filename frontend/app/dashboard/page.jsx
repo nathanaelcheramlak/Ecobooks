@@ -3,32 +3,54 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 
 const Dashboard = () => {
+  const [sellerId, setSellerId] = useState(null);
   const [stats, setStats] = useState({
     totalBooks: 0,
     totalOrders: 0,
     totalRevenue: 0,
   });
 
+  // Fetch user details and orders
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/v1/auth/verify", {
+          credentials: "include",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setSellerId(data.user.id);
+        } else {
+          setSellerId(null);
+        }
+      } catch (error) {
+        console.log("Error fetching user details: " + error.message);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8080/api/v1/orders/client/2"
+          `http://localhost:8080/api/v1/orders/seller/${sellerId}`
         );
         const data = await response.json();
-
+        console.log(data)
         // Extract useful information
-        const totalOrders = data.orders.length;
-        const totalRevenue = data.orders.reduce(
+        const totalOrders = data.orders?.length || 0;
+        const totalRevenue = data.orders?.reduce(
           (acc, order) => acc + order.totalPrice,
           0
-        );
-        const totalBooks = data.orders.reduce(
+        ) || 0;
+        const totalBooks = data.orders?.reduce(
           (acc, order) =>
             acc +
             order.orderItems.reduce((sum, item) => sum + item.quantity, 0),
           0
-        );
+        ) || 0;
 
         setStats({
           totalBooks,
@@ -41,7 +63,7 @@ const Dashboard = () => {
     };
 
     fetchStats();
-  }, []);
+  }, [sellerId]);
 
   return (
     <div className="container mx-auto p-8">
@@ -66,13 +88,13 @@ const Dashboard = () => {
       {/* Navigation Links */}
       <div className="flex space-x-4">
         <Link
-          href="/admin/books"
+          href="/manage-order"
           className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition"
         >
           Manage Books
         </Link>
         <Link
-          href="/admin/orders"
+          href="/manage-book"
           className="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition"
         >
           Manage Orders
