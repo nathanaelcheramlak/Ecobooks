@@ -51,7 +51,7 @@ const ManageBook = () => {
         setBooks(data.books);
         console.log(data.books);
       } catch (error) {
-        console.error(error.message);
+        console.log(error.message);
       }
     };
 
@@ -86,7 +86,7 @@ const ManageBook = () => {
       });
 
       if (!response.ok) {
-        console.error("Failed to add book");
+        console.log("Failed to add book");
         toast.error("Failed to add book.");
         setTimeout(() => {}, 1500);
       }
@@ -104,7 +104,7 @@ const ManageBook = () => {
       });
       toast.success("Book added successfully!");
     } catch (error) {
-      console.error("Error adding book:", error);
+      console.log("Error adding book:", error);
       toast.error("Failed to add book. Catch");
     }
   };

@@ -58,7 +58,7 @@ const Dashboard = () => {
           totalRevenue,
         });
       } catch (error) {
-        console.error("Error fetching admin stats:", error);
+        console.log("Error fetching admin stats:", error);
       }
     };
 

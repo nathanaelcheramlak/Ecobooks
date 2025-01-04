@@ -21,7 +21,7 @@ export default function BookDetails() {
         const data = await response.json();
         setBook(data.book);
       } catch (error) {
-        console.error("Error fetching book details:", error);
+        console.log("Error fetching book details:", error);
         setError(error.message);
       }
     };

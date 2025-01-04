@@ -21,7 +21,7 @@ export default function BooksPage() {
         setBooks(data.books);
         setFilteredBooks(data.books);
       } catch (error) {
-        console.error(error.message);
+        console.log(error.message);
       }
     };
 
