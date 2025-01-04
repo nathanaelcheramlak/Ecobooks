@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
 
 export default function FreeBooksPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -13,10 +12,15 @@ export default function FreeBooksPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(
-        `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=12&printType=books`
+      const response = await fetch(
+        `https://openlibrary.org/search.json?q=${query}&limit=12`
       );
-      setFreeBooks(response.data.items || []);
+      if (response.ok) {
+        const data = await response.json();
+        setFreeBooks(data.docs || []); // Use Open Library's `docs` property
+      } else {
+        setError("Failed to fetch free books. Please try again.");
+      }
     } catch (err) {
       console.error("Error fetching free books:", err);
       setError("Failed to fetch free books. Please try again.");
@@ -71,35 +75,24 @@ export default function FreeBooksPage() {
         {freeBooks.length > 0
           ? freeBooks.map((book) => (
               <div
-                key={book.id}
+                key={book.key}
                 className="bg-white shadow-md rounded p-4 flex flex-col"
               >
-                {/* Book Image */}
-                <img
-                  src={
-                    book.volumeInfo.imageLinks?.thumbnail || "/placeholder.png"
-                  }
-                  alt={book.volumeInfo.title}
-                  className="w-full h-48 object-contain rounded mb-4"
-                />
-
                 {/* Book Title */}
                 <h3 className="font-bold text-lg mb-2">
-                  {book.volumeInfo.title}
+                  {book.title || "No Title"}
                 </h3>
 
                 {/* Book Author */}
                 <p className="text-gray-700 mb-4">
-                  By: {book.volumeInfo.authors?.join(", ") || "Unknown"}
+                  By: {book.author_name?.join(", ") || "Unknown"}
                 </p>
 
                 {/* View/Download Button */}
                 <a
-                  href={book.volumeInfo.previewLink} // Google Books preview link
+                  href={`https://openlibrary.org${book.key}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  // Add download attribute if you have direct download links
-                  // download={book.volumeInfo.title}
                   className="bg-blue-600 text-white px-4 py-2 text-center rounded hover:bg-blue-700 transition"
                 >
                   View/Download
